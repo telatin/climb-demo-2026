@@ -1,3 +1,3 @@
-title: Introduction to Bioinformatics using the NBI HPC
-description: Learning how to use Slurm to schedule jobs, Singularity to make and use containers and micromamba
+title: Introduction to CLIMB JupyterLab
+description: A worked example to explore CLIMB's interface, terminal, storage, tools
 modules: ["about", "intro", "linux", "conda", "S3 buckets", "extras"]

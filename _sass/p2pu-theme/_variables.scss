@@ -15,6 +15,11 @@ $gray-light:            #D3D8E6;
 $gray-lighter:          #F3F4F8;
 $gray-snow:             #FCFCFC;
 
+// Brand palette (palette.json)
+$prussian-blue:         #0F243C;
+$alice-blue:            #D7E1EC;
+$vivid-tangerine:       #F97E0E;
+
 
 $white:    #fff !default;
 $gray-100: $gray-snow;
@@ -67,14 +72,14 @@ $p2pu-light-green:      transparentize($p2pu-green, 0.85);
 $p2pu-light-yellow:     transparentize($p2pu-yellow, 0.85);
 $p2pu-light-orange:     transparentize($p2pu-orange, 0.85);
 
-$primary:       $gray-darker;
+$primary:       $prussian-blue;
 $secondary:     $gray-lighter;
 $success:       $p2pu-green;
 $info:          $p2pu-blue;
 $warning:       $p2pu-yellow;
 $danger:        $p2pu-orange;
 $light:         $gray-snow;
-$dark:          $gray-darker;
+$dark:          $prussian-blue;
 
 $colors: () !default;
 // stylelint-disable-next-line scss/dollar-variable-default
@@ -182,14 +187,14 @@ $sizes: map-merge(
 // Settings for the `<body>` element.
 
 $body-bg:                   $white;
-$body-color:                $gray-darker;;
+$body-color:                $prussian-blue;
 
 // Links
 //
 // Style anchor elements.
 
 
-$link-color:                $p2pu-blue;
+$link-color:                $vivid-tangerine;
 $link-decoration:           none !default;
 $link-hover-color:          darken($link-color, 15%);
 $link-hover-decoration:     underline !default;
