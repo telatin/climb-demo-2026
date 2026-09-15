@@ -1,3 +1,8 @@
+// Brand palette (palette.json)
+$prussian-blue:   #0F243C;
+$alice-blue:      #D7E1EC;
+$vivid-tangerine: #F97E0E;
+
 body {
 	background-color: white;
   h1, h2, h3, h4, h5, h6 {
@@ -12,15 +17,25 @@ body {
 }
 
 .navbar {
+  background-color: $prussian-blue !important;
+
   a, .nav-link, button {
-    color: rgba(255, 255, 255, 0.8);
+    color: $alice-blue;
     text-transform: uppercase;
   }
 }
 
 .nav-item.active, .nav-item:hover {
-  background-color: #707782;
+  background-color: $vivid-tangerine;
 	transition: all 0.3s linear;
+
+  a, .nav-link, button {
+    color: $prussian-blue;
+  }
+}
+
+.nav-link:hover, .nav-link:focus {
+  color: $prussian-blue;
 }
 
 .nav-link{

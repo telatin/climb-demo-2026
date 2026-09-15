@@ -4,5 +4,7 @@ published: true
 ---
 
 This is the companion website for the 
-**Introduction to the NBI HPC for bioinformatics** training,
-delivered by the *Core Bioinformatics* team at the [Quadram Institute Bioscience](https://www.quadram.ac.uk)
+**a guided tour of CLIMB Notebook environments** training,
+delivered by the *[Core Bioinformatics](https://corebio.info)*
+team at the [Quadram Institute Bioscience](https://www.quadram.ac.uk)
+
