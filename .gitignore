@@ -4,3 +4,4 @@ _site/*
 DS_Store
 .bundler/
 .DS_Store
+.vscode/
