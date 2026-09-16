@@ -211,3 +211,7 @@
 .highlight {
   background-color: #f8f8f8;
 }
+.highlight pre,
+.highlight code {
+  background-color: transparent;
+}
