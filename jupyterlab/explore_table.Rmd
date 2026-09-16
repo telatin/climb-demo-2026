@@ -1,0 +1,220 @@
+---
+title: "Exploring the abundance table"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,   # hide package/startup messages
+  warning = FALSE,
+  fig.width = 10,    # default plot size (inches)
+  fig.height = 4.5
+)
+library(tidyverse)
+```
+
+# Introduction
+
+This report explores the abundance table `table.tsv`:
+
+- **rows** = taxa, labeled with their full taxonomic lineage
+  (e.g. `k__Bacteria,p__Firmicutes,...,g__Lactobacillus`)
+- **columns** = samples (sequencing runs named `ERR...`)
+- **values** = raw abundance counts
+
+We will import the data, reshape it to tidy format, parse the taxonomy,
+look at library sizes and community composition, and finish with a few plots.
+
+# Import the data
+
+`read_tsv()` parses the tab-separated file. The first column is called
+`#Taxon` in the header, so we rename it to `Taxon` right away
+(backticks are needed because the name starts with `#`).
+
+```{r import}
+counts <- read_tsv("table.tsv") |>
+  rename(Taxon = `#Taxon`)
+
+cat("Table dimensions:", nrow(counts), "taxa x", ncol(counts) - 1, "samples\n")
+counts |> slice(1:5, 1:5)
+```
+
+# Tidy the data
+
+For most analyses (and for ggplot2) it is convenient to have **one row per
+(taxon, sample) combination**: this is the *long* or *tidy* format.
+`pivot_longer()` stacks all sample columns into two new columns: `Sample`
+(the former column name) and `Count` (the value).
+
+```{r tidy}
+tidy_counts <- counts |>
+  pivot_longer(
+    cols = -Taxon,
+    names_to = "Sample",
+    values_to = "Count"
+  )
+
+tidy_counts
+```
+
+The wide table of `r nrow(counts)` taxa x `r ncol(counts) - 1` samples becomes
+`r nrow(tidy_counts)` rows, of which `r sum(tidy_counts$Count > 0)` (~68%) are
+nonzero.
+
+## Parse the taxonomy
+
+Row labels are full lineage strings. We extract the rank prefixes
+(`p__` = phylum, `g__` = genus, ...) with regular expressions:
+
+- `str_extract(Taxon, "g__[^,]+")` finds the `g__Genus` token
+  (`[^,]+` = any characters up to the next comma)
+- `str_remove(..., "g__")` strips the prefix
+- `replace_na(...)` labels rows that lack the rank (e.g. `u__unclassified`)
+
+```{r taxonomy}
+tidy_counts <- tidy_counts |>
+  mutate(
+    Phylum = str_extract(Taxon, "p__[^,]+") |> str_remove("p__") |>
+      replace_na("unclassified"),
+    Genus  = str_extract(Taxon, "g__[^,]+") |> str_remove("g__") |>
+      replace_na("unclassified")
+  )
+
+tidy_counts
+```
+
+# Exploration
+
+## Library sizes
+
+The **library size** is the total number of counts of a sample. Samples can
+differ enormously in sequencing depth, which matters when comparing them ---
+hence the relative abundances used later.
+
+```{r library-sizes}
+library_sizes <- tidy_counts |>
+  summarise(Total = sum(Count), .by = Sample) |>
+  arrange(desc(Total))
+
+library_sizes
+```
+
+The largest sample (`r library_sizes$Sample[1]`,
+`r format(library_sizes$Total[1], big.mark = ",")` counts) has more than
+**100x** the reads of the smallest one
+(`r format(min(library_sizes$Total), big.mark = ",")` counts).
+
+## Composition by phylum
+
+Collapsing all taxa that share the same phylum gives the broadest picture of
+the community:
+
+```{r phylum}
+by_phylum <- tidy_counts |>
+  summarise(Total = sum(Count), .by = Phylum) |>
+  arrange(desc(Total)) |>
+  mutate(Percent = round(100 * Total / sum(Total), 2))
+
+by_phylum
+```
+
+The community is dominated by **Firmicutes** (~89%), followed by
+*Proteobacteria* (~9%): a composition typical of fermented-food /
+dairy-type microbiomes.
+
+## Top genera
+
+```{r top-genera}
+top_genera <- tidy_counts |>
+  summarise(Total = sum(Count), .by = Genus) |>
+  arrange(desc(Total)) |>
+  slice_head(n = 10)
+
+top_genera
+```
+
+*Lactobacillus* alone accounts for more than half of all counts.
+
+# Plots
+
+## Library size per sample
+
+Totals span more than two orders of magnitude, so the y-axis uses a
+**log scale**: otherwise the shallow samples would be invisible.
+
+```{r plot-library, fig.height=4}
+ggplot(library_sizes, aes(x = reorder(Sample, Total), y = Total)) +
+  geom_col(fill = "steelblue") +
+  scale_y_log10() +
+  labs(
+    title = "Library size per sample",
+    x = NULL,
+    y = "Total counts (log10 scale)"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, size = 6))
+```
+
+## Top 10 genera by total abundance
+
+`reorder()` sorts the bars by abundance, and `coord_flip()` makes them
+horizontal so the genus names are easy to read.
+
+```{r plot-genera, fig.height=5, fig.width=7}
+ggplot(top_genera, aes(x = reorder(Genus, Total), y = Total)) +
+  geom_col(fill = "darkorange") +
+  coord_flip() +
+  labs(
+    title = "Top 10 genera by total abundance",
+    x = NULL,
+    y = "Total counts (all samples)"
+  ) +
+  theme_minimal(base_size = 11)
+```
+
+## Relative abundance per sample
+
+Converting counts to **percentages** removes the effect of unequal sequencing
+depth and makes community composition comparable across samples. The stacked
+bars show the top 8 genera; the composition differences between samples are
+striking: some are almost pure *Lactobacillus*, others are dominated by
+*Lactococcus* or by *Leuconostoc*/*Weissella*.
+
+```{r plot-composition, fig.height=5}
+top8 <- top_genera$Genus[1:8]
+
+composition <- tidy_counts |>
+  mutate(RelAbundance = 100 * Count / sum(Count), .by = Sample) |>
+  filter(Genus %in% top8) |>
+  # Sort genera in the legend by overall abundance
+  mutate(Genus = factor(Genus, levels = rev(top8)))
+
+ggplot(composition, aes(x = Sample, y = RelAbundance, fill = Genus)) +
+  geom_col(width = 0.9) +
+  labs(
+    title = "Top 8 genera: relative abundance per sample",
+    x = NULL,
+    y = "Relative abundance (%)",
+    fill = NULL
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, size = 6),
+    legend.position = "right"
+  )
+```
+
+# Recap
+
+| Step | Key functions |
+|---|---|
+| Import | `read_tsv()`, `rename()` |
+| Reshape | `pivot_longer()` |
+| Parse taxonomy | `str_extract()`, `str_remove()`, `replace_na()` |
+| Summarize | `summarise(.by = ...)`, `arrange()`, `slice_head()` |
+| Transform | `mutate()` (incl. grouped with `.by`), `filter()` |
+| Plot | `ggplot()` + `geom_col()`, `scale_y_log10()`, `coord_flip()` |
