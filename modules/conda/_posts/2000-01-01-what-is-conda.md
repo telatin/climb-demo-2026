@@ -94,3 +94,91 @@ mamba create -n nb_env \
 All conda environments that include `ipykernel` will be shown in the launcher:
 
 ![Python Notebook Launcher]({{ site.basename }}/{% link /img/env-list.png %})
+## **Q&A**
+
+### **Can I add a package to an existing environment?**
+
+Yes. If the new package is compatible with the packages already installed, you can add it to an existing environment.
+
+There are two common ways to do this.
+
+1. Activate the environment first:
+
+```bash
+conda activate my_env
+mamba install DEPENDENCY_NAME
+```
+
+2. Specify the environment directly:
+
+```bash
+mamba install -n my_env DEPENDENCY_NAME
+```
+
+In both cases, `mamba` will check whether the new package can be installed together with the packages already present in the environment.
+
+---
+
+### **Can I export an environment?**
+
+Yes.
+
+A Conda environment contains the package you explicitly requested, for example `kraken2`, together with the additional libraries and dependencies that it needs to run.
+
+You can export the environment definition to a YAML file:
+
+```bash
+# Run this inside the Conda environment
+conda env export > my_conda_env.yaml
+```
+
+The resulting file contains the packages and versions installed in the environment.
+
+You can later use it as a record of the software environment, or as a starting point for recreating it:
+
+```bash
+conda env create -f my_conda_env.yaml
+```
+
+This is useful for reproducibility, although it does not guarantee that the environment can always be recreated exactly on every operating system or at any point in the future.
+
+---
+
+### **Can I install all packages in the same environment?**
+
+Sometimes, but this is usually not a good idea.
+
+Some packages may be incompatible because they require different versions of the same dependency. For example, one tool may require an older version of a library while another requires a newer one.
+
+Even when all packages are compatible, a very large environment can become difficult to manage. Installing or updating one package may also affect other packages in the same environment.
+
+There are two useful strategies.
+
+1. **Create environments per task**
+
+For example:
+
+```text
+qc
+assembly
+mapping
+taxonomy
+```
+
+This keeps environments relatively small and allows you to reuse the same set of tools for similar tasks.
+
+For example, a `qc` environment could contain tools such as `fastp`, `fastplong` and `NanoPlot`.
+
+This approach is particularly convenient for common preprocessing steps.
+
+2. **Create environments per analysis or project**
+
+For example:
+
+```text
+ecoli_outbreak_2024
+```
+
+This keeps the software used for a particular analysis together.
+
+It can be useful for downstream analyses, where you may want a specific collection of Python or R libraries to remain associated with one project.
