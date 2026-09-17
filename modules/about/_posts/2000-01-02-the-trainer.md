@@ -1,6 +1,14 @@
 ---
 title: The Trainer
 ---
+<figure style="float: right; margin: 0 0 1em 1em; padding: 6px; font-size: 0.8em; color: #606060; background: #F0F0F0; width: 260px;">
+    <a href="https://quadram.ac.uk/people/andrea-telatin/">
+    <img style="width: 260px;" src="{{ site.baseurl }}/{% link /img/andrea-telatin.png %}" alt="Andrea Telatin (GPT made cartoon)">
+    </a>
+<!--
+    <figcaption><span style="font-size: 0.8em; color: #606060;">Cartoon of the author made by ChatGPT starting <a href="https://quadram.ac.uk/people/andrea-telatin/" alt="Original photo of Andrea Telatin used to make the cartoon">from a photo</a>.</span></figcaption>
+-->
+</figure>
 
 <figure style="float: right; margin: 0 0 1em 1em; padding: 6px; font-size: 0.8em; color: #606060; background: #F0F0F0; width: 260px;">
     <a href="https://quadram.ac.uk/people/andrea-telatin/">
