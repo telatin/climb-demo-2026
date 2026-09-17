@@ -94,6 +94,10 @@ mamba create -n nb_env \
 All conda environments that include `ipykernel` will be shown in the launcher:
 
 ![Python Notebook Launcher]({{ site.basename }}/{% link /img/env-list.png %})
+
+
+:bulb: similarily, you can create R notebooks installing `r-irkernel` and any r or bioconductor library you should need.
+
 ## **Q&A**
 
 ### **Can I add a package to an existing environment?**
